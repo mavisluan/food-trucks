@@ -1,0 +1,11 @@
+{
+  "queryStringParameters": {
+    "foodItem": "taco",
+    "truckName": "Tasty Truck",
+    "radius": 5000,
+    "centerPoint": {
+      "latitude": 37.75,
+      "longitude": -122.38
+    }
+  }
+}

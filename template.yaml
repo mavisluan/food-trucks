@@ -1,0 +1,21 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  GetFoodTrucksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs20.x
+      CodeUri: .
+      Architectures:
+        - arm64
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /food-trucks
+            Method: get
+      FunctionUrlConfig:
+        AuthType: NONE
+
+
+        

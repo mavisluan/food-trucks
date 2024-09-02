@@ -1,11 +1,24 @@
 const soda = require("soda-js");
-const geolib = require("geolib");
+const {
+  filterLocationsWithinRadius,
+  transformCoordinates,
+} = require("./helpers");
 
 const consumer = new soda.Consumer("data.sfgov.org");
 
-async function fetchData({ foodItem, truckName, radius, centerPoint }) {
+exports.handler = async (event) => {
+  if (event?.queryStringParameters) {
+    foodItem = event?.queryStringParameters?.foodItem || "";
+    truckName = event?.queryStringParameters?.truckName || "";
+    radius = parseInt(event?.queryStringParameters?.radius) || 5000;
+    latitude = parseFloat(event?.queryStringParameters?.latitude) || 37.75;
+    longitude = parseFloat(event?.queryStringParameters?.longitude) || -122.38;
+  }
+
+  // Default query: get all approved food trucks
   let where = "facilitytype = 'Truck' AND status = 'APPROVED'";
 
+  // Add filters if provided
   if (foodItem) {
     where = `lower(fooditems) like '%${foodItem.toLowerCase()}%' AND ${where}`;
   } else if (truckName) {
@@ -29,49 +42,29 @@ async function fetchData({ foodItem, truckName, radius, centerPoint }) {
         });
     });
 
-    const locations = transformCoordinates(rows);
-    // console.log(locations);
-    console.log(locations.length);
+    if (!rows?.length) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "No food trucks found" }),
+      };
+    }
 
-    // Get locations within the specified radius
+    const locations = transformCoordinates(rows);
     const locationsWithinRadius = filterLocationsWithinRadius({
       locations,
-      centerPoint,
+      centerPoint: { latitude, longitude },
       radius,
     });
 
-    // console.log(locationsWithinRadius);
-    console.log(locationsWithinRadius.length);
+    return {
+      statusCode: 200,
+      body: JSON.stringify(locationsWithinRadius),
+    };
   } catch (error) {
     console.error(error);
-  }
-}
-
-fetchData({
-  foodItem: "hot dogs",
-  truckName: "senor",
-  radius: 5000, // 5 km
-  centerPoint: { latitude: 37.75, longitude: -122.38 },
-});
-// fetchData({ truckName: "Natan's", radius: 5 });
-
-function transformCoordinates(locations) {
-  return locations.map((location) => {
     return {
-      ...location,
-      latitude: parseFloat(location.latitude),
-      longitude: parseFloat(location.longitude),
+      statusCode: 400,
+      body: JSON.stringify({ message: error?.message || "An error occurred" }),
     };
-  });
-}
-
-// Function to filter locations within the radius
-function filterLocationsWithinRadius({ locations, centerPoint, radius }) {
-  return locations.filter((location) => {
-    const distance = geolib.getDistance(
-      { latitude: location.latitude, longitude: location.longitude },
-      centerPoint
-    );
-    return distance <= radius;
-  });
-}
+  }
+};
