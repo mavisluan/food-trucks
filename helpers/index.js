@@ -1,7 +1,7 @@
-const filterLocationsWithinRadius = require("./filterLocationsWithinRadius");
-const transformCoordinates = require("./transformCoordinates");
+const filterLocationsWithinRadius = require('./filterLocationsWithinRadius');
+const transformCoordinates = require('./transformCoordinates');
 
 module.exports = {
-  filterLocationsWithinRadius,
-  transformCoordinates,
+    filterLocationsWithinRadius,
+    transformCoordinates,
 };
