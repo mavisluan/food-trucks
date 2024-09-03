@@ -7,17 +7,14 @@ const {
 const consumer = new soda.Consumer("data.sfgov.org");
 
 exports.handler = async (event) => {
-  if (event?.queryStringParameters) {
-    foodItem = event?.queryStringParameters?.foodItem || "";
-    truckName = event?.queryStringParameters?.truckName || "";
-    radius = parseInt(event?.queryStringParameters?.radius) || 5000;
-    latitude = parseFloat(event?.queryStringParameters?.latitude) || 37.75;
-    longitude = parseFloat(event?.queryStringParameters?.longitude) || -122.38;
-  }
+  const foodItem = event?.queryStringParameters?.foodItem || "";
+  const radius = parseInt(event?.queryStringParameters?.radius) || null;
+  const latitude = parseFloat(event?.queryStringParameters?.latitude) | null;
+  const longitude = parseFloat(event?.queryStringParameters?.longitude) | null;
+  let truckName = event?.queryStringParameters?.truckName || "";
 
   // Default query: get all approved food trucks
   let where = "facilitytype = 'Truck' AND status = 'APPROVED'";
-
   // Add filters if provided
   if (foodItem) {
     where = `lower(fooditems) like '%${foodItem.toLowerCase()}%' AND ${where}`;
@@ -27,7 +24,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const rows = await new Promise((resolve, reject) => {
+    const approvedTrucks = await new Promise((resolve, reject) => {
       consumer
         .query()
         .withDataset("rqzj-sfat")
@@ -42,23 +39,38 @@ exports.handler = async (event) => {
         });
     });
 
-    if (!rows?.length) {
+    if (!approvedTrucks?.length) {
       return {
         statusCode: 404,
         body: JSON.stringify({ message: "No food trucks found" }),
       };
     }
 
-    const locations = transformCoordinates(rows);
-    const locationsWithinRadius = filterLocationsWithinRadius({
-      locations,
-      centerPoint: { latitude, longitude },
-      radius,
-    });
+    const trucksLocations = transformCoordinates(approvedTrucks);
+    let result;
+
+    if (!latitude || !longitude || !radius) {
+      result = trucksLocations;
+    } else {
+      result = filterLocationsWithinRadius({
+        locations: trucksLocations,
+        centerPoint: { latitude, longitude },
+        radius,
+      });
+    }
+
+    if (!result.length) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({
+          message: "No food trucks found within the radius",
+        }),
+      };
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(locationsWithinRadius),
+      body: JSON.stringify(result),
     };
   } catch (error) {
     console.error(error);

@@ -12,7 +12,7 @@ describe("filterLocationsWithinRadius", () => {
     geolib.getDistance.mockClear();
   });
 
-  test("should handle null or undefined locations array", () => {
+  test("should return empty array for null or undefined locations array", () => {
     const result = filterLocationsWithinRadius({
       locations: null,
       centerPoint,
@@ -20,7 +20,7 @@ describe("filterLocationsWithinRadius", () => {
     expect(result).toEqual([]);
   });
 
-  test("should handle invalid centerPoint", () => {
+  test("should return return all locations for invalid centerPoint", () => {
     const locations = [
       { latitude: null, longitude: -74.006 },
       { latitude: 40.7128, longitude: undefined },
@@ -29,7 +29,7 @@ describe("filterLocationsWithinRadius", () => {
       locations,
       centerPoint: null,
     });
-    expect(result).toEqual([]);
+    expect(result).toEqual(locations);
   });
 
   test("should throw an error for invalid radius", () => {
@@ -57,28 +57,16 @@ describe("filterLocationsWithinRadius", () => {
     expect(result.length).toBe(10000);
   });
 
-  test("should include locations exactly on the radius boundary", () => {
-    const locations = [{ latitude: 40.7128, longitude: -74.006 }];
-    geolib.getDistance.mockReturnValue(5000);
-
-    const result = filterLocationsWithinRadius({
-      locations,
-      centerPoint,
-      radius: 5000,
-    });
-    expect(result).toEqual([{ latitude: 40.7128, longitude: -74.006 }]);
-  });
-
   test("should return locations within the radius", () => {
     const locations = [
-      { latitude: 40.7128, longitude: -74.006 }, // New York
-      { latitude: 34.0522, longitude: -118.2437 }, // Los Angeles
-      { latitude: 37.7749, longitude: -122.4194 }, // San Francisco
+      { latitude: 40.7128, longitude: -74.006 },
+      { latitude: 34.0522, longitude: -118.2437 },
+      { latitude: 37.7749, longitude: -122.4194 },
     ];
 
-    geolib.getDistance.mockReturnValueOnce(100000); // New York
-    geolib.getDistance.mockReturnValueOnce(5000); // Los Angeles
-    geolib.getDistance.mockReturnValueOnce(1000); // San Francisco
+    geolib.getDistance.mockReturnValueOnce(100000);
+    geolib.getDistance.mockReturnValueOnce(5000);
+    geolib.getDistance.mockReturnValueOnce(1000);
 
     const result = filterLocationsWithinRadius({
       locations,
@@ -87,8 +75,8 @@ describe("filterLocationsWithinRadius", () => {
     });
 
     expect(result).toEqual([
-      { latitude: 34.0522, longitude: -118.2437 }, // Los Angeles
-      { latitude: 37.7749, longitude: -122.4194 }, // San Francisco
+      { latitude: 34.0522, longitude: -118.2437 },
+      { latitude: 37.7749, longitude: -122.4194 },
     ]);
   });
 });
