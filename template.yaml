@@ -8,11 +8,5 @@ Resources:
             CodeUri: .
             Architectures:
                 - arm64
-            Events:
-                Api:
-                    Type: Api
-                    Properties:
-                        Path: /food-trucks
-                        Method: get
             FunctionUrlConfig:
                 AuthType: NONE
