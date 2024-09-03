@@ -1,7 +1,7 @@
 {
-    "name": "esl_challenge",
+    "name": "food-trucks",
     "version": "1.0.0",
-    "description": "",
+    "description": "A simple API to find food trucks in San Francisco",
     "main": "index.js",
     "scripts": {
         "test": "jest",
