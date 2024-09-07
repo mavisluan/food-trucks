@@ -15,7 +15,7 @@ The project addresses the gap in the SODA Consumer API, specifically its inabili
 -   [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) latest
 -   AWS account and credentials config (for the deployment step)
 
-### Installation
+### Installation for local development
 
 1. Clone the repository:
     ```bash
@@ -26,14 +26,29 @@ The project addresses the gap in the SODA Consumer API, specifically its inabili
     cd food-trucks
     ```
 3. Install dependencies:
+
     ```bash
     npm install
     ```
-4. Build the application
+
+4. Add `Events` to template.yaml after `FunctionUrlConfig` to expose the API locally
+
+    ```
+    Events:
+    Api:
+        Type: Api
+        Properties:
+            Path: /food-trucks
+            Method: get
+    ```
+
+5. Build the application
+
     ```bash
     sam build
     ```
-5. Start the application:
+
+6. Start the application:
 
     ```bash
     npm run start
